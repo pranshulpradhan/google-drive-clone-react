@@ -99,7 +99,48 @@ const Content = () => {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
-  
+  const [filePath, setFilePath] = useState('');
+//   const [fileName, setFileName] = useState('');
+
+  const handleGetPath = async (fileName) => {
+    try {
+        console.log(fileName);
+      // Create a reference to the file
+      const storageRef = firebase.storage().ref();
+      const fileRef = storageRef.child(fileName);
+
+      // Get the full path of the file
+      const fullPath = await fileRef.getFullPath();
+
+      setFilePath(fullPath);
+      handleDelete(filePath);
+    } catch (error) {
+      console.error('Error getting file path:', error.message);
+    }
+  };
+
+  const handleDelete = async (filePath) => {
+    try {
+      if (!filePath) {
+        console.error('File path is not available. Call handleGetPath first.');
+        return;
+      }
+
+      // Create a reference to the file to be deleted
+      const storageRef = firebase.storage().ref();
+      const fileRef = storageRef.child(filePath);
+
+      // Delete the file
+      await fileRef.delete();
+
+      console.log('File deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting file:', error.message);
+    }
+  };
+
+
+
 
   return (
     <DataContainer>
@@ -137,6 +178,8 @@ const Content = () => {
                         <p>Owner</p>
                         <p>{new Date(file.data.timestamp?.seconds*1000).toUTCString()}</p>
                         <p>{changeBytes(file.data.size)}</p>
+                        <DeleteIcon onClick={() => this.handleGetPath(file.filename)}></DeleteIcon>
+                        {/* <DeleteIcon onClick={event => DeleteFileButton(event, file.filename)}></DeleteIcon> */}
                 </DataListRow>
                 ))}
             </div>
